@@ -37,9 +37,14 @@
         - name: 📐 Terraform Plan
           run: terraform plan -var-file="terraform.tfvars"
 
-        - name: 🚀 Terraform Apply (solo en main)
+        - name: 🚀 Terraform Apply
 #          if: github.ref == 'refs/heads/master'
           run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
+        - name: 📂 Verificar archivos generados
+          run: |
+            ls -l ${{ env.TERRAFORM_DIR }}
+            ls -l ${{ env.TERRAFORM_DIR }}/outputs
 
         - name: 📦 Subir artefactos generados
           uses: actions/upload-artifact@v4
