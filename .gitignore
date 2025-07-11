@@ -6,3 +6,5 @@
 .vagrant
 
 logs
+
+__pycache__/
