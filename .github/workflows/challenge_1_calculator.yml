@@ -5,12 +5,7 @@ on:
     branches: [master, develop]
   pull_request:
     branches: [master]
-  workflow_dispatch:
-    inputs:
-      action:
-        description: "Acción a ejecutar (plan, apply)"
-        required: true
-        default: "plan"
+  workflow_dispatch: # ✅ Habilita ejecución manual
 
 jobs:
   terraform_challenge_1:
@@ -39,9 +34,11 @@ jobs:
       - name: ✅ Validar configuración
         run: terraform validate
 
-      - name: 🚀 Ejecutar acción
+      - name: 🚀 Ejecutar plan o apply
         run: |
-          if [ "${{ github.event.inputs.action }}" = "apply" ]; then
+          ACTION="${{ github.event.inputs.action || 'plan' }}"
+          echo "🔍 Acción seleccionada: $ACTION"
+          if [ "$ACTION" = "apply" ]; then
             terraform apply -auto-approve
           else
             terraform plan
@@ -49,14 +46,22 @@ jobs:
 
       - name: 📄 Mostrar archivo generado
         if: ${{ github.event.inputs.action == 'apply' }}
-        run: cat outputs/cost-report.json
+        run: |
+          if [ -f "./outputs/cost-report.json" ]; then
+            echo "📄 Contenido del archivo cost-report.json:"
+            cat ./outputs/cost-report.json
+          else
+            echo "⚠️ Archivo cost-report.json no generado."
+          fi
 
       - name: 📦 Subir artefactos generados
+        if: ${{ github.event.inputs.action == 'apply' && success() }}
         uses: actions/upload-artifact@v4
         with:
           name: Results
           path: |
             ${{ env.TERRAFORM_DIR }}/outputs/*
+          if-no-files-found: ignore  # ✅ Evita el warning
 
   notify_slack_discord:
     needs: terraform_challenge_1   # ⬅️ RELACIÓN DIRECTA: espera a que termine el job
