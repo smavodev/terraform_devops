@@ -1,0 +1,54 @@
+name: Terraform con Docker
+
+on:
+#  push:
+#    branches: [master, develop]
+#  pull_request:
+#    branches: [master]
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Ambiente (dev, staging, prod)"
+        required: true
+        default: "dev"
+      action:
+        description: "Acción (plan, apply, destroy)"
+        required: true
+        default: "plan"
+
+jobs:
+  terraform_deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      TERRAFORM_DIR: ./shared/terraform-dia22-devops  # ✅ Variable global
+
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIR }} # ✅ Directorio base para todos los pasos
+
+    steps:
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐳 Construir imagen Docker
+        run: docker build -t terraform-runner .
+
+      - name: 🚀 Ejecutar Terraform desde Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/${{ env.TERRAFORM_DIR }}:/workspace \
+            terraform-runner ${{ github.event.inputs.env }} ${{ github.event.inputs.action }}
+
+  notify_slack_discord:
+    needs: terraform_deploy   # ⬅️ RELACIÓN DIRECTA: espera a que termine el job terraform
+    if: always()              # ⬅️ Se ejecuta incluso si terraform falla
+    uses: ./.github/workflows/notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    with:
+      status: ${{ needs.terraform_deploy.result }}
+      branch: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      repo: ${{ github.event.repository.name }}

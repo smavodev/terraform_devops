@@ -1,0 +1,89 @@
+  name: Terraform DevOps Día 22
+
+  on:
+#    push:
+#      branches: [master, develop]
+#    pull_request:
+#      branches: [master]
+    workflow_dispatch:
+
+  jobs:
+    terraform_devops:
+      runs-on: ubuntu-latest
+
+      env:
+        TERRAFORM_VERSION: 1.12.2
+        TERRAFORM_DIR: ./shared/terraform-dia22-devops  # ✅ Variable global reutilizable
+
+      defaults:
+        run:
+  #        working-directory: ./shared/terraform-dia22-devops  # ✅ directorio por defecto
+          working-directory: ${{ env.TERRAFORM_DIR }}
+
+      steps:
+        - name: 📥 Checkout del repositorio
+          uses: actions/checkout@v4
+
+        - name: ⚙️ Instalar Terraform
+          uses: hashicorp/setup-terraform@v3
+          with:
+  #          terraform_version: 1.12.2
+            terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+        - name: 📦 Inicializar Terraform
+          run: terraform init
+
+        - name: ✅ Validar sintaxis
+          run: terraform validate
+
+        - name: 📐 Terraform Plan
+          run: terraform plan -var-file="terraform.tfvars"
+
+        - name: 🚀 Terraform Apply
+#          if: github.ref == 'refs/heads/master'
+          run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
+        - name: 📦 Subir artefactos generados
+          uses: actions/upload-artifact@v4
+          with:
+            name: Resultados_terraform
+#            path: |
+#              **/README.md
+#              **/outputs/*
+            path: |
+              ${{ env.TERRAFORM_DIR }}/README.md
+              ${{ env.TERRAFORM_DIR }}/outputs/*
+
+        - name: 🔔 Notificación Slack y Discord
+          if: always()
+          run: |
+            STATUS="${{ job.status }}"
+            BRANCH="${{ github.ref_name }}"
+            ACTOR="${{ github.actor }}"
+            # ENV="${{ github.repository }}"
+            ENV="${{ github.event.repository.name }}"
+            
+            # ✅ Mensajes
+            if [ "$STATUS" = "success" ]; then
+              SLACK_COLOR="good"
+              SLACK_MSG="✅ Despliegue *exitoso* en *$ENV* (\`$BRANCH\`) por *$ACTOR* 🚀"
+              DISCORD_MSG="✅ **Despliegue exitoso** en **$ENV** (\`$BRANCH\`) por \`$ACTOR\` 🚀"
+            else
+              SLACK_COLOR="danger"
+              SLACK_MSG="❌ *Falló* el despliegue en *$ENV* (\`$BRANCH\`) por *$ACTOR* 💥"
+              DISCORD_MSG="❌ **Falló el despliegue** en **$ENV** (\`$BRANCH\`) por \`$ACTOR\` 💥"
+            fi
+            
+            # 🔔 Enviar a Slack
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{
+                \"attachments\": [{
+                  \"color\": \"$SLACK_COLOR\",
+                  \"text\": \"$SLACK_MSG\"
+                }]
+              }" ${{ secrets.SLACK_WEBHOOK_URL }}
+            
+            # 🔔 Enviar a Discord
+            curl -X POST -H 'Content-Type: application/json' \
+              -d "{\"content\": \"$DISCORD_MSG\"}" \
+              ${{ secrets.DISCORD_WEBHOOK_URL }}

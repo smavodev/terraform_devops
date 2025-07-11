@@ -1,0 +1,77 @@
+name: Challenge 1 - Infrastructure Calculator
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: # ✅ Habilita ejecución manual
+
+jobs:
+  terraform_challenge_1:
+    runs-on: ubuntu-latest
+
+    env:
+      TERRAFORM_VERSION: 1.12.2
+      TERRAFORM_DIR: ./shared/terraform-challenges/challenge-1-calculator
+
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 📦 Inicializar Terraform
+        run: terraform init
+
+      - name: ✅ Validar configuración
+        run: terraform validate
+
+      - name: 🚀 Ejecutar plan o apply
+        run: |
+          ACTION="${{ github.event.inputs.action || 'plan' }}"
+          echo "🔍 Acción seleccionada: $ACTION"
+          if [ "$ACTION" = "apply" ]; then
+            terraform apply -auto-approve
+          else
+            terraform plan
+          fi
+
+      - name: 📄 Mostrar archivo generado
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: |
+          if [ -f "./outputs/cost-report.json" ]; then
+            echo "📄 Contenido del archivo cost-report.json:"
+            cat ./outputs/cost-report.json
+          else
+            echo "⚠️ Archivo cost-report.json no generado."
+          fi
+
+      - name: 📦 Subir artefactos generados
+        if: ${{ github.event.inputs.action == 'apply' && success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Results
+          path: |
+            ${{ env.TERRAFORM_DIR }}/outputs/*
+          if-no-files-found: ignore  # ✅ Evita el warning
+
+  notify_slack_discord:
+    needs: terraform_challenge_1   # ⬅️ RELACIÓN DIRECTA: espera a que termine el job
+    if: always()                   # ⬅️ Se ejecuta incluso si terraform falla
+    uses: ./.github/workflows/notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    with:
+      status: ${{ needs.terraform_challenge_1.result }} # Nombre del job que lo llama
+      branch: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      repo: ${{ github.event.repository.name }}
