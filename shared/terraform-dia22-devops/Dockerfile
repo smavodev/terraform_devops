@@ -11,12 +11,9 @@ RUN apk add --no-cache \
 # Crear directorio de trabajo
 WORKDIR /workspace
 
-# Copiar todo el contenido del proyecto
-#COPY . .
-COPY ./deploy.sh ./deploy.sh
+COPY . .
 
-# Dar permisos de ejecución al script (ajustado)
-#RUN chmod +x deploy.sh
+RUN chmod +x deploy.sh
 
 # Usar el script directamente (ajustado)
 ENTRYPOINT ["./deploy.sh"]
