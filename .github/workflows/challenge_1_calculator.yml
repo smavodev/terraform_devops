@@ -13,7 +13,7 @@ on:
         default: "plan"
 
 jobs:
-  terraform:
+  terraform_challenge_1:
     runs-on: ubuntu-latest
 
     env:
@@ -55,6 +55,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Results
-        path: |
-          ${{ env.TERRAFORM_DIR }}/outputs/*
+          path: |
+            ${{ env.TERRAFORM_DIR }}/outputs/*
 
+  notify_slack_discord:
+    needs: terraform_challenge_1   # ⬅️ RELACIÓN DIRECTA: espera a que termine el job
+    if: always()                   # ⬅️ Se ejecuta incluso si terraform falla
+    uses: ./.github/workflows/notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    with:
+      status: ${{ needs.terraform_deploy.result }}
+      branch: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      repo: ${{ github.event.repository.name }}
