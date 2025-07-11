@@ -14,8 +14,8 @@ WORKDIR /workspace
 # Copiar todo el contenido del proyecto
 COPY . .
 
-# Dar permisos de ejecución al script
-RUN chmod +x scripts/deploy.sh
+# Dar permisos de ejecución al script (ajustado)
+RUN chmod +x deploy.sh
 
-# Comando por defecto
-ENTRYPOINT ["scripts/deploy.sh"]
+# Usar el script directamente (ajustado)
+ENTRYPOINT ["./deploy.sh"]

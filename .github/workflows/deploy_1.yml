@@ -57,4 +57,4 @@ jobs:
       status: ${{ needs.terraform.result }}
       branch: ${{ github.ref_name }}
       actor: ${{ github.actor }}
-      repo: ${{ github.repository }}
+      repo: "$(basename "${{ github.repository }}")"
