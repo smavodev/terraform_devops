@@ -36,12 +36,15 @@ jobs:
         run: docker build -t terraform-runner .
 
       - name: 🚀 Ejecutar Terraform desde Docker
-        run: docker run --rm terraform-runner ${{ github.event.inputs.env }} ${{ github.event.inputs.action }}
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/${{ env.TERRAFORM_DIR }}:/workspace \
+            terraform-runner ${{ github.event.inputs.env }} ${{ github.event.inputs.action }}
 
       - name: 📦 Subir artefactos generados
         uses: actions/upload-artifact@v4
         with:
-          name: archivos-generados
+          name: Resultados_terraform
           path: |
             ${{ env.TERRAFORM_DIR }}/README.md
             ${{ env.TERRAFORM_DIR }}/outputs/*

@@ -12,7 +12,7 @@ RUN apk add --no-cache \
 WORKDIR /workspace
 
 # Copiar todo el contenido del proyecto
-COPY . .
+#COPY . .
 
 # Dar permisos de ejecución al script (ajustado)
 RUN chmod +x deploy.sh
