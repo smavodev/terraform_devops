@@ -16,7 +16,7 @@ WORKDIR /workspace
 COPY ./deploy.sh ./deploy.sh
 
 # Dar permisos de ejecución al script (ajustado)
-RUN chmod +x deploy.sh
+#RUN chmod +x deploy.sh
 
 # Usar el script directamente (ajustado)
 ENTRYPOINT ["./deploy.sh"]
