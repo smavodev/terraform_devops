@@ -1,11 +1,10 @@
 name: Terraform con Docker
 
 on:
-  push:
-    branches: [master, develop]
-  pull_request:
-    branches: [master]
-
+#  push:
+#    branches: [master, develop]
+#  pull_request:
+#    branches: [master]
   workflow_dispatch:
     inputs:
       env:

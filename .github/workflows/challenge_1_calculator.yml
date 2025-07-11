@@ -1,0 +1,60 @@
+name: Challenge 1 - Infrastructure Calculator
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Acción a ejecutar (plan, apply)"
+        required: true
+        default: "plan"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      TERRAFORM_VERSION: 1.12.2
+      TERRAFORM_DIR: ./shared/terraform-challenges/challenge-1-calculator
+
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 📦 Inicializar Terraform
+        run: terraform init
+
+      - name: ✅ Validar configuración
+        run: terraform validate
+
+      - name: 🚀 Ejecutar acción
+        run: |
+          if [ "${{ github.event.inputs.action }}" = "apply" ]; then
+            terraform apply -auto-approve
+          else
+            terraform plan
+          fi
+
+      - name: 📄 Mostrar archivo generado
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: cat outputs/cost-report.json
+
+      - name: 📦 Subir artefactos generados
+        uses: actions/upload-artifact@v4
+        with:
+          name: Results
+        path: |
+          ${{ env.TERRAFORM_DIR }}/outputs/*
+

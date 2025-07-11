@@ -113,8 +113,8 @@ Vagrant.configure("2") do |config|
 
 ## ⬇️ Solo activa esta parte después del primer `vagrant up` exitoso
 ## cuando el usuario `smavodev` ya existe y tiene clave pública autorizada
-  config.ssh.username = user_name
-  config.ssh.private_key_path = "./shared/id_rsa"
-  config.ssh.shell = "/bin/bash"
+#   config.ssh.username = user_name
+#   config.ssh.private_key_path = "./shared/id_rsa"
+#   config.ssh.shell = "/bin/bash"
 
 end
