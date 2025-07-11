@@ -6,7 +6,7 @@
     workflow_dispatch:
 
   jobs:
-    terraform:
+    terraform_devops:
       runs-on: ubuntu-latest
 
       env:
@@ -38,7 +38,7 @@
           run: terraform plan -var-file="terraform.tfvars"
 
         - name: 🚀 Terraform Apply (solo en main)
-          if: github.ref == 'refs/heads/main'
+#          if: github.ref == 'refs/heads/master'
           run: terraform apply -auto-approve -var-file="terraform.tfvars"
 
         - name: 📦 Subir artefactos generados
