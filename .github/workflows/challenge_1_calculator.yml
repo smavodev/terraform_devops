@@ -66,7 +66,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     with:
-      status: ${{ needs.terraform_deploy.result }}
+      status: ${{ needs.terraform_challenge_1.result }} # Nombre del job que lo llama
       branch: ${{ github.ref_name }}
       actor: ${{ github.actor }}
       repo: ${{ github.event.repository.name }}
