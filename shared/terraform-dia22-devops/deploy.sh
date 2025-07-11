@@ -1,5 +1,4 @@
 #!/bin/bash
-# scripts/deploy.sh
 
 set -e  # 🔒 Salir si hay errores
 set -u  # ❗ Error si usamos variables sin definir
@@ -22,6 +21,8 @@ if [[ ! "$ACTION" =~ ^(plan|apply|destroy)$ ]]; then
 fi
 
 export TF_VAR_environment=$ENVIRONMENT
+
+cd /workspace
 
 echo "📦 Inicializando Terraform..."
 terraform init \
@@ -52,4 +53,35 @@ case "$ACTION" in
     ;;
 esac
 
-echo "✅ ¡Despliegue completado!"
+# Crear directorio de outputs
+mkdir -p /workspace/outputs
+
+echo "📝 Exportando outputs de Terraform..."
+
+# Guardar outputs en varios formatos
+terraform output -json > /workspace/outputs/terraform-output.json
+terraform output > /workspace/outputs/terraform-output.txt
+
+# Opcional: generar archivos por cada variable de output individual
+echo "📄 Generando archivos por variable..."
+for var in $(terraform output -json | jq -r 'keys[]'); do
+    terraform output "$var" > "/workspace/outputs/${var}.txt"
+done
+
+# Crear README
+echo "📘 Generando README..."
+cat <<EOF > /workspace/README.md
+# Resultados del Despliegue Terraform
+
+- Ambiente: $ENVIRONMENT
+- Acción ejecutada: $ACTION
+- Fecha: $(date)
+
+## Archivos generados:
+- terraform-output.json
+- terraform-output.txt
+- Archivos individuales por cada variable de output
+
+EOF
+
+echo "✅ ¡Proceso completado con éxito!"s
