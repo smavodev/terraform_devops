@@ -35,11 +35,11 @@ jobs:
       - name: 🐳 Construir imagen Docker
         run: docker build -t terraform-runner .
 
-#      - name: 🚀 Ejecutar Terraform desde Docker
-#        run: |
-#          docker run --rm \
-#            -v ${{ github.workspace }}/${{ env.TERRAFORM_DIR }}:/workspace \
-#            terraform-runner ${{ github.event.inputs.env }} ${{ github.event.inputs.action }}
+      - name: 🚀 Ejecutar Terraform desde Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/${{ env.TERRAFORM_DIR }}:/workspace \
+            terraform-runner ${{ github.event.inputs.env }} ${{ github.event.inputs.action }}
 
       - name: 📦 Subir artefactos generados
         uses: actions/upload-artifact@v4
