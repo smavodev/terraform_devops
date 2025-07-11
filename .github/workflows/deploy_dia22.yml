@@ -41,19 +41,13 @@
 #          if: github.ref == 'refs/heads/master'
           run: terraform apply -auto-approve -var-file="terraform.tfvars"
 
-        - name: 📂 Verificar archivos generados
-          run: |
-            ls -l ${{ env.TERRAFORM_DIR }}
-            ls -l ${{ env.TERRAFORM_DIR }}/outputs
-
         - name: 📦 Subir artefactos generados
           uses: actions/upload-artifact@v4
           with:
             name: archivos-generados
-#            path: |
-#              shared/terraform-dia22-devops/README.md
-#              shared/terraform-dia22-devops/outputs/*
-            path: ${{ env.TERRAFORM_DIR }}/README.md,${{ env.TERRAFORM_DIR }}/outputs/*
+            path: |
+              **/README.md
+              **/outputs/*
 
         - name: 🔔 Notificación Slack y Discord
           if: always()
@@ -61,7 +55,7 @@
             STATUS="${{ job.status }}"
             BRANCH="${{ github.ref_name }}"
             ACTOR="${{ github.actor }}"
-            ENV="Voting App"
+            ENV=${{ github.repository }}"
             
             # ✅ Mensajes
             if [ "$STATUS" = "success" ]; then
