@@ -13,6 +13,7 @@ WORKDIR /workspace
 
 # Copiar todo el contenido del proyecto
 #COPY . .
+COPY ./deploy.sh ./deploy.sh
 
 # Dar permisos de ejecución al script (ajustado)
 RUN chmod +x deploy.sh
