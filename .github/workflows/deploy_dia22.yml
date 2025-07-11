@@ -11,7 +11,7 @@
 
       env:
         TERRAFORM_VERSION: 1.12.2
-        TERRAFORM_DIR: shared/terraform-dia22-devops  # ✅ Variable global reutilizable
+        TERRAFORM_DIR: ./shared/terraform-dia22-devops  # ✅ Variable global reutilizable
 
       defaults:
         run:
@@ -55,3 +55,35 @@
 #              shared/terraform-dia22-devops/outputs/*
             path: ${{ env.TERRAFORM_DIR }}/README.md,${{ env.TERRAFORM_DIR }}/outputs/*
 
+        - name: 🔔 Notificación Slack y Discord
+          if: always()
+          run: |
+            STATUS="${{ job.status }}"
+            BRANCH="${{ github.ref_name }}"
+            ACTOR="${{ github.actor }}"
+            ENV="Voting App"
+            
+            # ✅ Mensajes
+            if [ "$STATUS" = "success" ]; then
+              SLACK_COLOR="good"
+              SLACK_MSG="✅ Despliegue *exitoso* en *$ENV* (\`$BRANCH\`) por *$ACTOR* 🚀"
+              DISCORD_MSG="✅ **Despliegue exitoso** en **$ENV** (\`$BRANCH\`) por \`$ACTOR\` 🚀"
+            else
+              SLACK_COLOR="danger"
+              SLACK_MSG="❌ *Falló* el despliegue en *$ENV* (\`$BRANCH\`) por *$ACTOR* 💥"
+              DISCORD_MSG="❌ **Falló el despliegue** en **$ENV** (\`$BRANCH\`) por \`$ACTOR\` 💥"
+            fi
+            
+            # 🔔 Enviar a Slack
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{
+                \"attachments\": [{
+                  \"color\": \"$SLACK_COLOR\",
+                  \"text\": \"$SLACK_MSG\"
+                }]
+              }" ${{ secrets.SLACK_WEBHOOK_URL }}
+            
+            # 🔔 Enviar a Discord
+            curl -X POST -H 'Content-Type: application/json' \
+              -d "{\"content\": \"$DISCORD_MSG\"}" \
+              ${{ secrets.DISCORD_WEBHOOK_URL }}
