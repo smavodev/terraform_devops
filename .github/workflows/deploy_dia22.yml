@@ -61,7 +61,7 @@
             BRANCH="${{ github.ref_name }}"
             ACTOR="${{ github.actor }}"
             # ENV="${{ github.repository }}"
-            ENV="$(basename "${{ github.repository }}")"
+            ENV="${{ github.event.repository.name }}"
             
             # ✅ Mensajes
             if [ "$STATUS" = "success" ]; then
