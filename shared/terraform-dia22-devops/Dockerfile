@@ -11,9 +11,10 @@ RUN apk add --no-cache \
 # Crear directorio de trabajo
 WORKDIR /workspace
 
-COPY . .
+#COPY . .
+COPY deploy.sh ./deploy.sh
 
-RUN chmod +x deploy.sh
+RUN chmod +x ./deploy.sh
 
 # Usar el script directamente (ajustado)
-ENTRYPOINT ["bash", "deploy.sh"]
+ENTRYPOINT ["./deploy.sh"]
