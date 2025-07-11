@@ -1,0 +1,59 @@
+name: Enviar Notificaciones
+
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      actor:
+        required: true
+        type: string
+      repo:
+        required: true
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+      DISCORD_WEBHOOK_URL:
+        required: true
+
+jobs:
+  notify_slack_discord:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔔 Enviar Notificaciones
+        run: |
+          STATUS="${{ inputs.status }}"
+          BRANCH="${{ inputs.branch }}"
+          ACTOR="${{ inputs.actor }}"
+          ENV="${{ inputs.repo }}"
+
+          if [ "$STATUS" = "success" ]; then
+            SLACK_COLOR="good"
+            SLACK_MSG="✅ Despliegue *exitoso* en *$ENV* (\`$BRANCH\`) por *$ACTOR* 🚀"
+            DISCORD_MSG="✅ **Despliegue exitoso** en **$ENV** (\`$BRANCH\`) por \`$ACTOR\` 🚀"
+          else
+            SLACK_COLOR="danger"
+            SLACK_MSG="❌ *Falló* el despliegue en *$ENV* (\`$BRANCH\`) por *$ACTOR* 💥"
+            DISCORD_MSG="❌ **Falló el despliegue** en **$ENV** (\`$BRANCH\`) por \`$ACTOR\` 💥"
+          fi
+
+          # Slack
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"attachments\": [{
+                \"color\": \"$SLACK_COLOR\",
+                \"text\": \"$SLACK_MSG\"
+              }]
+            }" ${{ secrets.SLACK_WEBHOOK_URL }}
+
+          # Discord
+          curl -X POST -H 'Content-Type: application/json' \
+            -d "{\"content\": \"$DISCORD_MSG\"}" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
