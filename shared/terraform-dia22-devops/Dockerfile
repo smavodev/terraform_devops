@@ -16,4 +16,4 @@ COPY . .
 RUN chmod +x deploy.sh
 
 # Usar el script directamente (ajustado)
-ENTRYPOINT ["./deploy.sh"]
+ENTRYPOINT ["bash", "deploy.sh"]
