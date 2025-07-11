@@ -1,0 +1,52 @@
+name: Terraform DevOps Día 22
+
+on:
+  push:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      TERRAFORM_VERSION: 1.12.2
+      TERRAFORM_DIR: shared/terraform-dia22-devops  # ✅ Variable global reutilizable
+
+    defaults:
+      run:
+#        working-directory: ./shared/terraform-dia22-devops  # ✅ directorio por defecto
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+#          terraform_version: 1.12.2
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 📦 Inicializar Terraform
+        run: terraform init
+
+      - name: ✅ Validar sintaxis
+        run: terraform validate
+
+      - name: 📐 Terraform Plan
+        run: terraform plan -var-file="terraform.tfvars"
+
+      - name: 🚀 Terraform Apply (solo en main)
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
+      - name: 📦 Subir artefactos generados
+        uses: actions/upload-artifact@v4
+        with:
+          name: archivos-generados
+          path: |
+#            shared/terraform-dia22-devops/README.md
+#            shared/terraform-dia22-devops/outputs/*
+            ${{ env.TERRAFORM_DIR }}/README.md
+            ${{ env.TERRAFORM_DIR }}/outputs/*
