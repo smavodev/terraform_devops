@@ -41,14 +41,6 @@ jobs:
             -v ${{ github.workspace }}/${{ env.TERRAFORM_DIR }}:/workspace \
             terraform-runner ${{ github.event.inputs.env }} ${{ github.event.inputs.action }}
 
-      - name: 📦 Subir artefactos generados
-        uses: actions/upload-artifact@v4
-        with:
-          name: Resultados_terraform
-          path: |
-            ${{ env.TERRAFORM_DIR }}/README.md
-            ${{ env.TERRAFORM_DIR }}/outputs/*
-
   notify_slack_discord:
     needs: terraform_deploy   # ⬅️ RELACIÓN DIRECTA: espera a que termine el job terraform
     if: always()              # ⬅️ Se ejecuta incluso si terraform falla
