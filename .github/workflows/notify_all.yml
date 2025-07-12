@@ -1,0 +1,75 @@
+name: Enviar Notificaciones
+
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      actor:
+        required: true
+        type: string
+      repo:
+        required: true
+        type: string
+      sha:               # ✅ nuevo
+        required: false
+        type: string
+      pr_number:         # ✅ nuevo
+        required: false
+        type: string
+      commit_message:    # ✅ nuevo
+        required: false
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+      DISCORD_WEBHOOK_URL:
+        required: true
+
+jobs:
+  notify_slack_discord:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔔 Enviar Notificaciones
+        run: |
+          STATUS="${{ inputs.status }}"
+          BRANCH="${{ inputs.branch }}"
+          ACTOR="${{ inputs.actor }}"
+          REPO="${{ inputs.repo }}"
+          SHA="${{ inputs.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+          PR_NUMBER="${{ inputs.pr_number }}"
+          COMMIT_MSG="${{ inputs.commit_message }}"
+
+          if [ "$STATUS" = "success" ]; then
+            SLACK_COLOR="good"
+            TITLE="✅ Despliegue exitoso"
+          else
+            SLACK_COLOR="danger"
+            TITLE="❌ Falló el despliegue"
+          fi
+
+          MSG="*${TITLE}* en *$REPO* (\`$BRANCH\`) por \`$ACTOR\` 🚀"
+
+          [ -n "$SHORT_SHA" ] && MSG="$MSG\n• Commit: \`$SHORT_SHA\`"
+          [ -n "$COMMIT_MSG" ] && MSG="$MSG\n• Mensaje: $COMMIT_MSG"
+          [ -n "$PR_NUMBER" ] && MSG="$MSG\n• Pull Request: $$PR_NUMBER"
+
+          # Enviar a Slack
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{
+              \"attachments\": [ {
+                \"color\": \"$SLACK_COLOR\",
+                \"text\": \"$SLACK_MSG\"
+              } ]
+            }" ${{ secrets.SLACK_WEBHOOK_URL }}
+
+          # Enviar a Discord
+          curl -X POST -H 'Content-Type: application/json' \
+            -d "{\"content\": \"$DISCORD_MSG\"}" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
