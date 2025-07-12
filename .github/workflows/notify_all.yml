@@ -48,7 +48,8 @@ jobs:
 
           if [ "$STATUS" = "success" ]; then
             SLACK_COLOR="good"
-            TITLE="✅ Despliegue exitoso"
+            TITLE_SLACK="✅ Despliegue exitoso"
+            TITLE_DISCORD="✅ **Despliegue exitoso**"
           elif [ "$STATUS" = "failure" ]; then
             SLACK_COLOR="danger"
             TITLE_SLACK="❌ Despliegue fallido"
@@ -63,11 +64,11 @@ jobs:
             TITLE_DISCORD="🔍 **Estado desconocido**: $STATUS"
           fi
 
-          # Mensajes base
+          # 🧩 Mensajes base
           SLACK_MSG="*$TITLE_SLACK* en *$REPO* (\`$BRANCH\`) por \`$ACTOR\` 🚀"
           DISCORD_MSG="$TITLE_DISCORD en **$REPO** (\`$BRANCH\`) por \`$ACTOR\` 🚀"
 
-          # Agregar detalles si existen
+          # Agregar detalles adicionales si existen
           [ -n "$SHORT_SHA" ] && SLACK_MSG="$SLACK_MSG\n• Commit: \`$SHORT_SHA\`"
           [ -n "$SHORT_SHA" ] && DISCORD_MSG="$DISCORD_MSG\n• Commit: \`$SHORT_SHA\`"
 
@@ -77,16 +78,21 @@ jobs:
           [ -n "$PR_NUMBER" ] && SLACK_MSG="$SLACK_MSG\n• Pull Request: #$PR_NUMBER"
           [ -n "$PR_NUMBER" ] && DISCORD_MSG="$DISCORD_MSG\n• Pull Request: #$PR_NUMBER"
 
-          # Enviar a Slack
+          # ✅ Enviar a Slack con BLOCKS para mejor formato
           curl -X POST -H 'Content-type: application/json' \
             --data "{
-              \"attachments\": [ {
-                \"color\": \"$SLACK_COLOR\",
-                \"text\": \"$SLACK_MSG\"
-              } ]
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"$SLACK_MSG\"
+                  }
+                }
+              ]
             }" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-          # Enviar a Discord
+          # ✅ Enviar a Discord
           curl -X POST -H 'Content-Type: application/json' \
             -d "{\"content\": \"$DISCORD_MSG\"}" \
             ${{ secrets.DISCORD_WEBHOOK_URL }}
