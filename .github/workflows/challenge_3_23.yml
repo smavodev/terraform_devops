@@ -37,6 +37,9 @@ jobs:
       - name: 🚀 Plan
         run: terraform plan
 
+      - name: 📝 Apply
+        run: terraform apply -auto-approve
+
       - name: 🧾 Ver archivos generados
         run: |
           echo "Archivos generados en carpeta 'services/'"
@@ -50,3 +53,19 @@ jobs:
           path: |
             ${{ env.TERRAFORM_DIR }}/services/*
           if-no-files-found: ignore
+
+  notify_slack_discord:
+    needs: run_challenge_3
+    if: always()
+    uses: ./.github/workflows/notify_all.yml # Nombre del job
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    with:
+      status: ${{ needs.run_challenge_3.result }} # Nombre del Job
+      branch: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      repo: ${{ github.event.repository.name }}
+      sha: ${{ github.sha }}
+      pr_number: ${{ github.event.pull_request.number || '' }}
+      commit_message: ${{ github.event.head_commit.message || '' }}

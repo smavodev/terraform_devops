@@ -39,3 +39,19 @@ jobs:
 
       - name: 📝 Apply
         run: terraform apply -auto-approve
+
+  notify_slack_discord:
+    needs: run_challenge_1
+    if: always()
+    uses: ./.github/workflows/notify_all.yml # Nombre del job
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    with:
+      status: ${{ needs.run_challenge_1.result }} # Nombre del Job
+      branch: ${{ github.ref_name }}
+      actor: ${{ github.actor }}
+      repo: ${{ github.event.repository.name }}
+      sha: ${{ github.sha }}
+      pr_number: ${{ github.event.pull_request.number || '' }}
+      commit_message: ${{ github.event.head_commit.message || '' }}
