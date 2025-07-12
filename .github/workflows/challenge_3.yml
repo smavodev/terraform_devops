@@ -51,8 +51,8 @@ jobs:
 
       - name: 🚀 Ejecutar plan o apply
         run: |
-          ACTION="${{ github.event.inputs.action || 'plan' }}"
-          WORKLOAD="${{ github.event.inputs.workload }}"
+          ACTION="${{ github.event.inputs.action || 'apply' }}"
+          WORKLOAD="${{ github.event.inputs.workload || 'web' }}"
           echo "🔍 Acción: $ACTION - Tipo de carga: $WORKLOAD"
 
           if [ "$ACTION" = "apply" ]; then
