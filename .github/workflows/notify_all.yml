@@ -54,7 +54,7 @@ jobs:
             TITLE="❌ Falló el despliegue"
           fi
 
-          MSG="*${TITLE}* en *$REPO* (\`$BRANCH\`) por \`$ACTOR\` 🚀"
+          MSG="**${TITLE}** en **$REPO** (\`$BRANCH\`) por \`$ACTOR\` 🚀"
 
           [ -n "$SHORT_SHA" ] && MSG="$MSG\n• Commit: \`$SHORT_SHA\`"
           [ -n "$COMMIT_MSG" ] && MSG="$MSG\n• Mensaje: $COMMIT_MSG"
