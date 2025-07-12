@@ -1,0 +1,52 @@
+name: Challenge 2 - Config Validator
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  run_challenge_2:
+    runs-on: ubuntu-latest
+
+    env:
+      TERRAFORM_VERSION: 1.5.7
+      TERRAFORM_DIR: ./shared/terraform-challenges-23/challenge-2-validation
+
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIR }}
+
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      - name: ⏬ Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: 📦 Init
+        run: terraform init
+
+      - name: ✅ Validate config
+        run: terraform validate
+
+      - name: 🚀 Plan
+        run: terraform plan
+
+      - name: 🧾 Mostrar reporte de validación
+        run: |
+          echo "Contenido del archivo generado:"
+          cat validation-report-${TF_VAR_environment}.txt || echo "❌ Reporte no encontrado."
+
+      - name: 📤 Subir reporte
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: |
+            ${{ env.TERRAFORM_DIR }}/validation-report-*.txt
+          if-no-files-found: ignore
