@@ -1,10 +1,10 @@
 name: Challenge 1 - Infrastructure Calculator
 
 on:
-  push:
-    branches: [master, develop]
-  pull_request:
-    branches: [master]
+#  push:
+#    branches: [master, develop]
+#  pull_request:
+#    branches: [master]
   workflow_dispatch:
     inputs:
       action:
@@ -45,7 +45,7 @@ jobs:
 
       - name: 🚀 Ejecutar plan o apply
         run: |
-          ACTION="${{ github.event.inputs.action || 'apply' }}"
+          ACTION="${{ github.event.inputs.action || 'plan' }}"
           echo "🔍 Acción seleccionada: $ACTION"
           if [ "$ACTION" = "apply" ]; then
             terraform apply -auto-approve
