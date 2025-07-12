@@ -15,13 +15,13 @@ on:
       repo:
         required: true
         type: string
-      sha:               # ✅ nuevo
+      sha:
         required: false
         type: string
-      pr_number:         # ✅ nuevo
+      pr_number:
         required: false
         type: string
-      commit_message:    # ✅ nuevo
+      commit_message:
         required: false
         type: string
     secrets:
@@ -58,18 +58,18 @@ jobs:
 
           [ -n "$SHORT_SHA" ] && MSG="$MSG\n• Commit: \`$SHORT_SHA\`"
           [ -n "$COMMIT_MSG" ] && MSG="$MSG\n• Mensaje: $COMMIT_MSG"
-          [ -n "$PR_NUMBER" ] && MSG="$MSG\n• Pull Request: $$PR_NUMBER"
+          [ -n "$PR_NUMBER" ] && MSG="$MSG\n• Pull Request: #$PR_NUMBER"
 
-          # Enviar a Slack
+          # Slack
           curl -X POST -H 'Content-type: application/json' \
             --data "{
               \"attachments\": [ {
                 \"color\": \"$SLACK_COLOR\",
-                \"text\": \"$SLACK_MSG\"
-              } ]
+                \"text\": \"$MSG\"
+              }]
             }" ${{ secrets.SLACK_WEBHOOK_URL }}
 
-          # Enviar a Discord
+          # Discord
           curl -X POST -H 'Content-Type: application/json' \
-            -d "{\"content\": \"$DISCORD_MSG\"}" \
+            -d "{\"content\": \"$MSG\"}" \
             ${{ secrets.DISCORD_WEBHOOK_URL }}
