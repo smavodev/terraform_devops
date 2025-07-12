@@ -1,28 +1,32 @@
-name: Challenge 2 - Multi-Environment Generator
+name: Challenge 3 - Dynamic Infrastructure
 
 on:
-#  push:
-#    branches: [master, develop]
-#  pull_request:
-#    branches: [master]
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
     inputs:
+      workload:
+        description: "Tipo de carga (web, api, database, cache, queue)"
+        required: true
+        default: "web"
       action:
-        description: "Acción a ejecutar (plan o apply)"
+        description: "Acción (plan o apply)"
         required: true
         default: "plan"
       ref:
-        description: "Rama o tag (opcional)"
+        description: "Rama/tag"
         required: false
         default: "develop"
 
 jobs:
-  terraform_challenge_2:
+  terraform_challenge_3:
     runs-on: ubuntu-latest
 
     env:
       TERRAFORM_VERSION: 1.12.2
-      TERRAFORM_DIR: ./shared/terraform-challenges/challenge-2-multi-env
+      TERRAFORM_DIR: ./shared/terraform-challenges/challenge-3-dynamic
 
     defaults:
       run:
@@ -48,37 +52,40 @@ jobs:
       - name: 🚀 Ejecutar plan o apply
         run: |
           ACTION="${{ github.event.inputs.action || 'plan' }}"
-          echo "🔍 Acción seleccionada: $ACTION"
+          WORKLOAD="${{ github.event.inputs.workload }}"
+          echo "🔍 Acción: $ACTION - Tipo de carga: $WORKLOAD"
+
           if [ "$ACTION" = "apply" ]; then
-            terraform apply -auto-approve
+            terraform apply -auto-approve -var="workload_type=$WORKLOAD"
           else
-            terraform plan
+            terraform plan -var="workload_type=$WORKLOAD"
           fi
 
-      - name: 📄 Mostrar archivos generados
+      - name: 📄 Mostrar resultado
         if: ${{ github.event.inputs.action == 'apply' }}
         run: |
-          echo "📂 Archivos generados:"
-          ls -l ./outputs || echo "⚠️ No se encontraron archivos"
+          echo "📄 Archivo generado:"
+          ls -l ./outputs || echo "⚠️ No se generó ningún archivo"
+          cat ./outputs/infrastructure-plan-${{ github.event.inputs.workload }}.json || echo "❌ No se encontró el archivo."
 
-      - name: 📦 Subir artefactos generados
+      - name: 📦 Subir artefacto
         if: ${{ github.event.inputs.action == 'apply' && success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Environment_Templates
+          name: Infra_Plan
           path: |
             ${{ env.TERRAFORM_DIR }}/outputs/*
           if-no-files-found: ignore
 
   notify_slack_discord:
-    needs: terraform_challenge_2
+    needs: terraform_challenge_3
     if: always()
-    uses: ./.github/workflows/notify_all.yml # Nombre del job
+    uses: ./.github/workflows/notify_all.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     with:
-      status: ${{ needs.terraform_challenge_2.result }} # Nombre del Job
+      status: ${{ needs.terraform_challenge_3.result }}
       branch: ${{ github.ref_name }}
       actor: ${{ github.actor }}
       repo: ${{ github.event.repository.name }}
