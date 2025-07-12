@@ -1,4 +1,4 @@
-name: Challenge 1 - Infrastructure Calculator
+name: Challenge 2 - Multi-Environment Generator
 
 on:
   push:
@@ -12,17 +12,17 @@ on:
         required: true
         default: "plan"
       ref:
-        description: "Rama o tag a ejecutar (por ejemplo: master, develop)"
+        description: "Rama o tag (opcional)"
         required: false
         default: "develop"
 
 jobs:
-  terraform_challenge_1:
+  terraform_challenge_2:
     runs-on: ubuntu-latest
 
     env:
       TERRAFORM_VERSION: 1.12.2
-      TERRAFORM_DIR: ./shared/terraform-challenges/challenge-1-calculator
+      TERRAFORM_DIR: ./shared/terraform-challenges/challenge-2-multi-env
 
     defaults:
       run:
@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref_name }}
 
       - name: 🛠️ Instalar Terraform
         uses: hashicorp/setup-terraform@v3
@@ -45,7 +47,7 @@ jobs:
 
       - name: 🚀 Ejecutar plan o apply
         run: |
-          ACTION="${{ github.event.inputs.action || 'apply' }}"
+          ACTION="${{ github.event.inputs.action || 'plan' }}"
           echo "🔍 Acción seleccionada: $ACTION"
           if [ "$ACTION" = "apply" ]; then
             terraform apply -auto-approve
@@ -53,34 +55,30 @@ jobs:
             terraform plan
           fi
 
-      - name: 📄 Mostrar archivo generado
+      - name: 📄 Mostrar archivos generados
         if: ${{ github.event.inputs.action == 'apply' }}
         run: |
-          if [ -f "./outputs/cost-report.json" ]; then
-            echo "📄 Contenido del archivo cost-report.json:"
-            cat ./outputs/cost-report.json
-          else
-            echo "⚠️ Archivo cost-report.json no generado."
-          fi
+          echo "📂 Archivos generados:"
+          ls -l ./outputs || echo "⚠️ No se encontraron archivos"
 
       - name: 📦 Subir artefactos generados
         if: ${{ github.event.inputs.action == 'apply' && success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: Results
+          name: Environment_Templates
           path: |
             ${{ env.TERRAFORM_DIR }}/outputs/*
-          if-no-files-found: ignore  # ✅ Evita el warning
+          if-no-files-found: ignore
 
   notify_slack_discord:
-    needs: terraform_challenge_1   # ⬅️ RELACIÓN DIRECTA: espera a que termine el job
-    if: always()                   # ⬅️ Se ejecuta incluso si terraform falla
+    needs: terraform_challenge_2
+    if: always()
     uses: ./.github/workflows/notify.yml
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     with:
-      status: ${{ needs.terraform_challenge_1.result }} # Nombre del job que lo llama
+      status: ${{ needs.terraform_challenge_2.result }}
       branch: ${{ github.ref_name }}
       actor: ${{ github.actor }}
       repo: ${{ github.event.repository.name }}
