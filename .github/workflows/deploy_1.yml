@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       env:
-        description: "Ambiente (dev, staging, prod)"
+        description: "Ambiente (terraform, dev, staging, prod)"
         required: true
         default: "dev"
       action:
