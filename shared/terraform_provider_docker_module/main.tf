@@ -35,8 +35,10 @@ module "postgres" {
   database_user     = var.database_user
   database_password = var.database_password
   external_port     = var.postgres_external_port
-  volume_name       = module.volumes.postgres_volume_name
-  network_name      = module.network.network_name
+#   volume_name       = module.volumes.postgres_volume_name
+#   network_name      = module.network.network_name
+  volume_name       = module.volumes.info.postgres_volume_name
+  network_name      = module.network.info.network_name
 
   providers = {
     docker = docker
@@ -49,8 +51,10 @@ module "redis" {
   image          = "redis:7-alpine"
   container_name = "roxs-redis"
   external_port  = var.redis_external_port
-  volume_name    = module.volumes.redis_volume_name
-  network_name   = module.network.network_name
+#   volume_name    = module.volumes.redis_volume_name
+#   network_name   = module.network.network_name
+  volume_name    = module.volumes.info.redis_volume_name
+  network_name   = module.network.info.network_name
 
   providers = {
     docker = docker
@@ -63,7 +67,8 @@ module "nginx" {
   image               = "nginx:alpine"
   container_name      = "roxs-nginx"
   nginx_external_port = var.nginx_external_port
-  network_name        = module.network.network_name
+#   network_name        = module.network.network_name
+  network_name        = module.network.info.network_name
   nginx_conf_path = "${path.module}/nginx.conf"
 
   depends_on = [

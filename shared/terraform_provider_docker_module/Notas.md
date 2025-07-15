@@ -75,4 +75,5 @@ terraform destroy --auto-approve
 
 ```shell
 terraform output 
+terraform output all_info
 ```
