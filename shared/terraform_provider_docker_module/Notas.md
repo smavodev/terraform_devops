@@ -2,25 +2,43 @@
 # Terraform Module
 
 ```markdown
-terraform-project/
-├── main.tf                  # Código principal que llama a módulos
-├── variables.tf             # Variables globales (opcional)
-├── environments/
+terraform_provider_docker_module/
+│
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── enviroments
 │   ├── dev.tfvars
-│   └── prod.tfvars
+│   ├── staging.tfvars
+│   ├── prod.tfvars
+├── nginx.conf
+├── .gitignore
 ├── modules/
 │   ├── network/
-│   │   └── main.tf
+│   │   ├── main.tf
+│   │   ├── outputs.tf
 │   │   └── variables.tf
+│   │
+│   ├── volumes/
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   │
 │   ├── postgres/
-│   │   └── main.tf
+│   │   ├── main.tf
+│   │   ├── outputs.tf
 │   │   └── variables.tf
+│   │
 │   ├── redis/
-│   │   └── main.tf
+│   │   ├── main.tf
+│   │   ├── outputs.tf
 │   │   └── variables.tf
+│   │
 │   └── nginx/
-│       └── main.tf
+│       ├── main.tf
+│       ├── outputs.tf
 │       └── variables.tf
+
 
 ```
 #### Comandos terraform
@@ -53,4 +71,8 @@ terraform apply -var-file="environments/prod.tfvars"
 
 ```shell
 terraform destroy --auto-approve
+```
+
+```shell
+terraform output 
 ```
