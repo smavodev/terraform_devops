@@ -50,3 +50,34 @@ docker exec roxs-nginx ping redis
 ## Link Codigo base de ejemplo:
 [Ejemplo Base](https://www.notion.so/smavodev/Gu-a-Terraform-Docker-Entorno-con-PostgreSQL-Redis-y-NGINX-231a73a196f880b2be83d421a292050b)
 
+--- 
+Ejecucion 1:
+Para usar los valores de environment.tfvars:
+```shell
+terraform apply -var-file="environment.tfvars"
+
+```
+
+Ejecucion 2:
+Si quieres que se cargue automáticamente sin especificarlo cada vez:
+Renombarlo de **environment.tfvars** a **terraform.auto.tfvars**
+
+```shell
+terraform apply
+```
+---
+
+Dev:
+```shell
+terraform apply -var-file="dev.tfvars"
+```
+
+Staging:
+```shell
+terraform apply -var-file="staging.tfvars"
+```
+
+Prod:
+```shell
+terraform apply -var-file="prod.tfvars"
+```

@@ -125,21 +125,26 @@ resource "docker_container" "nginx" {
   }
 
   # Subir archivo nginx.conf al contenedor
-  upload {
-    content = <<EOT
-    events {}
+#   upload {
+#     content = <<EOT
+#     events {}
+#
+#     http {
+#       server {
+#         listen 80;
+#         location / {
+#           return 200 '¡Nginx funcionando correctamente!';
+#           add_header Content-Type text/plain;
+#         }
+#       }
+#     }
+#     EOT
+#     file = "/etc/nginx/nginx.conf"
+#   }
 
-    http {
-      server {
-        listen 80;
-        location / {
-          return 200 '¡Nginx funcionando correctamente!';
-          add_header Content-Type text/plain;
-        }
-      }
-    }
-    EOT
-    file = "/etc/nginx/nginx.conf"
+  upload {
+    source = "${path.module}/nginx.conf"
+    file   = "/etc/nginx/nginx.conf"
   }
 
   networks_advanced {
