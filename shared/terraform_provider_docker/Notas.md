@@ -1,13 +1,18 @@
 
 #### Inicializa el proyecto
+```shell
 terraform init
+```
 
 #### Muestra qué se va a aplicar
+```shell
 terraform plan
+```
 
 #### Aplica los recursos
 ```shell
 terraform apply -auto-approve
+```
 
 #### Verifica contenedores
 ```shell
