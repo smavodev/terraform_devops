@@ -68,4 +68,4 @@ jobs:
       repo: ${{ github.event.repository.name }}
       sha: ${{ github.sha }}
       pr_number: ${{ github.event.pull_request.number || '' }}
-      commit_message: ${{ github.event.head_commit.message || '' }}
+      commit_message:  ${{ github.event.head_commit.message || '' }}

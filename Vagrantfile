@@ -104,7 +104,7 @@ Vagrant.configure("2") do |config|
   # 🛠 Provisionamiento modular
 #   config.vm.provision "shell", path: "Scripts/create_user.sh", args: [user_name, shared_folder, user_ip], privileged: true
 #   config.vm.provision "shell", path: "Scripts/setup_ansible.sh", args: [user_name, user_ip], privileged: true
-#   config.vm.provision "shell", path: "Scripts/setup_docker_y_compose.sh", privileged: true
+  config.vm.provision "shell", path: "Scripts/setup_docker_y_compose.sh", privileged: true
   config.vm.provision "shell", path: "Scripts/setup_terraform.sh", privileged: true
 
   config.vm.provision "shell", inline: <<-SHELL
